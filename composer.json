@@ -1,0 +1,13 @@
+{
+    "name": "blumanski/bang_nestedset",
+    "description": "Directory module for Bang Framework - Backend",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "blumanski",
+            "email": "blumanski@gmail.com"
+        }
+    ],
+    "require": {}
+}
