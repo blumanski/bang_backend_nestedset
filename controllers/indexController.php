@@ -75,7 +75,8 @@ class indexController extends \Bang\SuperController implements \Bang\ControllerI
     	
     	// Add module language files to language array
     	$this->View->Lang->addLanguageFile($this->path.'/lang/'.$currentLang);
-    	$this->View->addStyle($this->View->TemplatePath.'min/css/directory/assets/scss/directory.min.css', 0);
+    	$this->View->addStyle($this->View->TemplatePath.'min/css/directory.min.css', 0);
+    	$this->View->addScript($this->View->TemplatePath.'min/js/directory.js', 0);
 
     	$this->testPermisions();
     	

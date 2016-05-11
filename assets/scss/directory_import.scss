@@ -1,0 +1,41 @@
+#nodeform-wrapper {
+    display: none;
+    clear: both;
+}
+
+#newnode {
+	display: block;
+	margin: 0 0 10px 0;
+}
+
+.treeroot {
+    
+    .uk-nestable-item {
+        overflow: hidden;
+        clear: both;
+        
+        .toolbar {
+	        float: right;
+	        padding: 0 6px 0 6px;
+	        
+	    }
+    }
+}
+
+a.tree-toolbar {
+	margin: 0 8px 0 8px;
+	color: #333;
+	
+	&.delete {
+	   
+	}
+}
+
+
+/** nestable overwrite */
+.uk-nestable-item + .uk-nestable-item {
+  margin-top: 4px !important;
+}
+.uk-nestable-list:not(.uk-nestable-dragged) > .uk-nestable-item:first-child {
+  margin-top: 4px !important;
+}
