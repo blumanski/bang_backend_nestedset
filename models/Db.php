@@ -3,12 +3,36 @@
  * @author Oliver Blum <blumanski@gmail.com>
  * @date 2016-01-02
  * 
- * Regarding validation, I try to get the validation as close as possible to the action
- * It is better that way as you look at it and you know exactley what validation is in place
- * and nothing can happen inbetwen.
+ * This class creates and handles tree structures using the nested set model.
+ * The trees created can be used in many ways, as example I name menus and directories...
+ * The module works without errors but some configuration and little bits can get improved.
+ * 
+ * @working fine but may have another look at it
+ * Moving a branch into another branch
+ * At the moment, I translate the nestable json tree coming from the frontend and loop through to update all
+ * the items left, right, parent and levels. With a huge tree that takes some time.
+ * That is a point which can improve for sure, it is a very sensitive area as it easy to stuff up the tree.
+ * Well, this is not ideal but it works very reliable, Categories are not something that changes very often.
+ * 
+ * Pros: Works right now reliable
+ * Cons: Many queries to update each item - 200 items = 200 queries
+ * 
+ * However, the other option would be to move the item with all children and update all other left and rights,
+ * after that update the left and right of the moved item and children to put into the new spot.
+ * 
+ * Pros: Less queries, may 2 or three
+ * Cons: High error source and may cant update parent and levels in database, which makes the front end handling easier
+ * 
+ * @review at later point of time
  *  
  *
- * Menu Model database
+ * NestedSet Model Data
+ */
+
+/**
+ * @todo Need to finalize this class soon
+ * remove experimental classes or finalize the new features such as fast add
+ * @status Real work testing
  */
 
 Namespace Bang\Modules\Directory\Models;
@@ -56,10 +80,10 @@ class Db extends \Bang\SuperModel
      */
     public function __construct(\stdClass $di)
     {
-        $this->PdoWrapper      	= $di->PdoWrapper;
-        $this->ErrorLog 		= $di->ErrorLog;
-        $this->Session	 		= $di->Session;
-        $this->Lang				= $di->View->Lang;
+        $this->PdoWrapper	= $di->PdoWrapper;
+        $this->ErrorLog		= $di->ErrorLog;
+        $this->Session		= $di->Session;
+        $this->Lang			= $di->View->Lang;
     }
     
     /**
@@ -71,6 +95,17 @@ class Db extends \Bang\SuperModel
     	$this->Mail = $Mail;
     }
     
+    /**
+     * *********** Experimental Fast Route Adding **********
+     * Need to get tested after many changes.
+     * 
+     * Allows to add items like the example below, that would be a textarea
+     * /Level1/Level2/sub0
+     * /Level1/Level2/Sub1
+     * /Level1/Level2/Sub2
+     * /Level1/Level2/Sub2/SubSub1
+     * /Level1/Level2/Sub2/SubSub2
+     */
     
     /**
      * Try to ad a route to the navigation
@@ -80,6 +115,7 @@ class Db extends \Bang\SuperModel
     {
     	return $this->testRootPartByName($route, $rootid);
     }
+    
     
     private function testRootPartByName(array $route, int $treeid)
     {
@@ -112,7 +148,6 @@ class Db extends \Bang\SuperModel
     	}
     	 
     	return true;
-    	 
     }
     
     /**
@@ -155,10 +190,11 @@ class Db extends \Bang\SuperModel
     	return false;
     }
     
+    /**
+     * *********** END Experimental Fast Route Adding **********
+     */
+    
 /********************* MOVE NODE **************/   
-    
-    
-    
    
     /**
      * Move an node to a new position in the tree
@@ -170,11 +206,15 @@ class Db extends \Bang\SuperModel
     	$serialized = json_decode($serialized, true);
     	
     	$dataTree = $this->addLeftRightToArray($serialized);
-    	return $this->updateTreeReseonable($dataTree, $rootid);
+    	return $this->updateTreeReasonable($dataTree, $rootid);
     }
     
-    
-    public function updateTreeReseonable($data, $treeid)
+    /**
+     * Loop through tree and trigger item update using the given data
+     * @param array $data
+     * @param int $treeid
+     */
+    public function updateTreeReasonable(array $data, int $treeid) : bool
     {
     	if(is_array($data) && count($data)) {
     
@@ -186,9 +226,12 @@ class Db extends \Bang\SuperModel
     	return true;
     }
     
-    
-
-    private function updateLeftRight($item, $treeid = '')
+	/**
+	 * Update the left an right values for item after moving it in the tree
+	 * @param array $item
+	 * @param int $treeid
+	 */
+    private function updateLeftRight(array $item, int $treeid = '')
     {
     	$query = "UPDATE `".$this->addTable('categories')."` 
     				SET 
@@ -227,13 +270,12 @@ class Db extends \Bang\SuperModel
     	return 'update menu failed...';
     }
     
-    
     /**
-     * get the count of children in a multi dimensional - nested - array
+     * Get the count of children in a multi dimensional - nested - array
      * @param array/string $data - array we want the count of
      * @param bool $reset - reset count for a fresh start
      */
-    public function getChildCount($data, $reset = false)
+    public function getChildCount(array $data, $reset = false) : int
     {
     	// keep value
     	static $count = 0;
@@ -257,7 +299,6 @@ class Db extends \Bang\SuperModel
     		}
     	}
     
-    	// return
     	return $count;
     }
     
@@ -265,7 +306,7 @@ class Db extends \Bang\SuperModel
      * add nested set left and right to array
      * @param array $data
      */
-    private function addLeftRightToArray($data)
+    private function addLeftRightToArray(array $data) : array
     {
     	$left   = 0;
     	$new    = array();
@@ -279,7 +320,7 @@ class Db extends \Bang\SuperModel
     }
     
     
-    private function recursiveChildren($data, $parent = 0, $level = 2)
+    private function recursiveChildren(array $data, int $parent = 0, int $level = 2) : array
     {
     	static $array       = array();
     	static $left        = 1;
@@ -329,17 +370,7 @@ class Db extends \Bang\SuperModel
     	return $array;
     }
     
-    
-    
-    
-    
     /********************* END MOVE NODE **************/
-    
-    
-    
-    
-    
-    
     
     /**
      * Delete branch from database
@@ -460,7 +491,7 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * Controller for felete branch process
+     * Controller for delete branch process
      * @param int $id
      * @param int $rootid
      */
@@ -492,7 +523,7 @@ class Db extends \Bang\SuperModel
     
     
     /**
-     * Delete a category with all depcndencies
+     * Delete a category with all dependencies
      * @param int $catid
      */
     public function removeCategory(int $catid) : bool
@@ -536,7 +567,7 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * Backup a category as .sql file
+     * Backup a category as .sql file and upload the file to AWS S3
      * @param int $catid
      */
     public function backupCategory(int $catid) :bool
@@ -561,7 +592,7 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * 
+     * Create sql insert string
      * @param array $data
      */
     private function genBackupSqlForTree(array $data)
@@ -603,7 +634,7 @@ class Db extends \Bang\SuperModel
     }
     
    /**
-    * Get a tree inclusive root and all deopend children
+    * Get a tree inclusive root and all children
     * @param int $catid
     */
   	private function getCompleteRootTreeById(int $catid)
@@ -662,7 +693,7 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * Get frontend permission grous
+     * Get frontend permission groups
      */
     public function getFrontendPermissionGroups()
     {
@@ -774,10 +805,10 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * Delete langagr entries for hookid
+     * Delete language entries for hookid
      * @param int $hookid
      */
-    private function deleteFromLanguageGrid(int $hookid)
+    private function deleteFromLanguageGrid(int $hookid) : bool
     {
     	$query = "DELETE FROM `".$this->addTable('language_grid')."`
     				WHERE
@@ -853,10 +884,10 @@ class Db extends \Bang\SuperModel
     }
     
     /**
-     * Update a categories met data
+     * Update a categories meta data
      * @param array $params
      */
-    public function updateCategoryMetaData(array $params)
+    public function updateCategoryMetaData(array $params) : bool
     {
     	if($this->validateCreateMainCategoryForm((array)$params) === true) {
     		
@@ -897,7 +928,6 @@ class Db extends \Bang\SuperModel
 	    					$this->PdoWrapper->commit();
 	    					return true;
 	    				}
-	    				
 	    			}
 	    		
 	    		} catch (\PDOException $e) {
@@ -910,9 +940,7 @@ class Db extends \Bang\SuperModel
 	    		}
 	    		
 	    		$this->PdoWrapper->rollBack();
-	    		
 	    	}
-    		
     	}
     	
     	return false;
@@ -1086,7 +1114,7 @@ class Db extends \Bang\SuperModel
      * Validate the add category form
      * @param array $params
      */
-    private function validateAddNodeForm($params)
+    private function validateAddNodeForm(array $params) : bool
     {
     	if(isset($params['rootid']) && (int)$params['rootid'] > 0) {
     		
@@ -1274,7 +1302,7 @@ class Db extends \Bang\SuperModel
      * @param array $params
      * @return unknown|boolean
      */
-    public function nestUpdateNodeConrtoller(array $params)
+    public function nestUpdateNodeConrtoller(array $params) : bool
     {
     	// 1. Validate params
     	if($this->validateUpdateNodeForm($params) === true) {
@@ -1402,7 +1430,7 @@ class Db extends \Bang\SuperModel
      * @param array $target
      * @param array $params
      */
-    private function nestInsertNode($target, $params)
+    private function nestInsertNode(array $target, array $params)
     {
     	$query = "INSERT INTO `".$this->addTable('categories')."`
     				(`name`, `lft`, `rgt`, `parentid`, `rootid`, `level`, `template`)

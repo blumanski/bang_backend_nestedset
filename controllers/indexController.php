@@ -86,6 +86,10 @@ class indexController extends \Bang\SuperController implements \Bang\ControllerI
     	$this->Data->setMailInstance($this->Mail);
     }
     
+    
+    /**
+     * ******* Experimental - Fast Add Categories - **********
+     */
     public function tweedleAction()
     {
     	$post = Helper::getRequestParams('post'); 
@@ -128,6 +132,10 @@ class indexController extends \Bang\SuperController implements \Bang\ControllerI
     	
     	die('<br />I am dead right here');
     }
+    
+    /**
+     * ******* END - Experimental - Fast Add Categories - **********
+     */
     
     /**
      * Edit a node/sub category
@@ -187,8 +195,6 @@ class indexController extends \Bang\SuperController implements \Bang\ControllerI
     		
     		// no data given
     	}
-    	
-    	
     }
     
     /**
