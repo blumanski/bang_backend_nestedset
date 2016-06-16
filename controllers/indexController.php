@@ -3,7 +3,17 @@
  * @author Oliver Blum <blumanski@gmail.com>
  * @date 2016-01-02
  *
- * Default controller class for module account
+ * Index Controller for directory module
+ * The directory module is dealing with tree structures which are using the nested set model.
+ * This is used to build category structures or as example a menu with deeper levels
+ * 
+ * The writing of a tree is slowish
+ * The reading of a tree is super fast
+ * 
+ * I use a forrest of trees to keep the writing fast too
+ * The trees are handled via interface.
+ * 
+ * The categories (trees) can get used for basically anything which is in need of a multiple level structure
  * 
  */
 

@@ -3,7 +3,7 @@
  * @author Oliver Blum <blumanski@gmail.com>
  * @date 2016-01-02
  *
- * Default controller class for module account
+ * Ajax controller for the javascript interface
  * 
  */
 
